@@ -79,11 +79,15 @@ export const finishOrder = async () => {
         priceInCents: item.productVariant.priceInCents,
       }));
     await tx.insert(orderItemTable).values(orderItemsPayload);
-    await tx.delete(cartTable).where(eq(cartTable.id, cart.id));
-    await tx.delete(cartItemTable).where(eq(cartItemTable.cartId, cart.id));
+    // Don't delete cart yet - it's needed for checkout session validation
+    // Cart will be cleared after successful checkout
   });
   if (!orderId) {
     throw new Error("Failed to create order");
   }
+
+  revalidatePath("/cart");
+  revalidatePath("/");
+
   return { orderId };
 };

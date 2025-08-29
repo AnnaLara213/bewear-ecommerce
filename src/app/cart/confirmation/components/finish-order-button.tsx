@@ -3,6 +3,7 @@
 import { loadStripe } from "@stripe/stripe-js";
 import { Loader2 } from "lucide-react";
 
+import { clearCart } from "@/actions/clear-cart";
 import { createCheckoutSession } from "@/actions/create-checkout-session";
 import { Button } from "@/components/ui/button";
 import { useFinishOrder } from "@/hooks/mutations/use-finish-order";
@@ -17,15 +18,24 @@ const FinishOrderButton = () => {
     const checkoutSession = await createCheckoutSession({
       orderId,
     });
-    const stripe = await loadStripe(
-      process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
-    );
-    if (!stripe) {
-      throw new Error("Failed to load Stripe");
+
+    // Clear the cart after successful checkout session creation
+    await clearCart();
+
+    // Use the session URL directly if available, otherwise use Stripe redirect
+    if (checkoutSession.url) {
+      window.location.href = checkoutSession.url;
+    } else {
+      const stripe = await loadStripe(
+        process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+      );
+      if (!stripe) {
+        throw new Error("Failed to load Stripe");
+      }
+      await stripe.redirectToCheckout({
+        sessionId: checkoutSession.id,
+      });
     }
-    await stripe.redirectToCheckout({
-      sessionId: checkoutSession.id,
-    });
   };
   return (
     <>

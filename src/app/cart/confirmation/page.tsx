@@ -58,7 +58,12 @@ const ConfirmationPage = async () => {
                 <p className="text-sm">{formatAddress(cart.shippingAddress)}</p>
               </CardContent>
             </Card>
-            <FinishOrderButton />
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1">
+                Voltar
+              </Button>
+              <FinishOrderButton />
+            </div>
           </CardContent>
         </Card>
         <CartSummary

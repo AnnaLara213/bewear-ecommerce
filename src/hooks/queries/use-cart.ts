@@ -11,5 +11,7 @@ export const useCart = (params?: {
     queryKey: getUseCartQueryKey(),
     queryFn: () => getCart(),
     initialData: params?.initialData,
+    retry: false,
+    enabled: true,
   });
 };

@@ -61,9 +61,29 @@ const Addresses = ({
   );
   const createShippingAddressMutation = useCreateShippingAddress();
   const updateCartShippingAddressMutation = useUpdateCartShippingAddress();
+  const { data: cart } = useCart();
   const { data: addresses, isLoading } = useUserAddresses({
     initialData: shippingAddresses,
   });
+
+  useEffect(() => {
+    const loadCartData = async () => {
+      try {
+        const cartData = await getCart();
+        console.log("Cart data loaded:", cartData);
+        if (!cartData) {
+          console.log("User not authenticated, redirecting to login");
+          router.push("/authentication");
+        }
+      } catch (error) {
+        console.error("Failed to load cart:", error);
+      }
+    };
+
+    if (!cart) {
+      loadCartData();
+    }
+  }, [cart, router]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -114,6 +134,27 @@ const Addresses = ({
       console.error(error);
     }
   };
+
+  // Redirect to authentication if user is not authenticated
+  if (!cart) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Identificação</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="py-8 text-center">
+            <p className="text-muted-foreground mb-4">
+              Você precisa estar logado para continuar.
+            </p>
+            <Button onClick={() => router.push("/authentication")}>
+              Fazer Login
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>

@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { headers } from "next/headers";
 import Stripe from "stripe";
 
@@ -31,14 +31,54 @@ export const createCheckoutSession = async (
     throw new Error("Unauthorized");
   }
   const { orderId } = createCheckoutSessionSchema.parse(data);
+
+  // Validate that the order exists and belongs to the user
   const order = await db.query.orderTable.findFirst({
     where: eq(orderTable.id, orderId),
+  });
+
+  // Additional validation: ensure cart still exists and hasn't been modified
+  const cart = await db.query.cartTable.findFirst({
+    where: eq(cartTable.userId, session.user.id),
+    with: {
+      items: {
+        with: {
+          productVariant: true,
+        },
+      },
+    },
   });
   if (!order) {
     throw new Error("Order not found");
   }
   if (order.userId !== session.user.id) {
     throw new Error("Unauthorized");
+  }
+
+  // Validate that cart exists and has items
+  if (!cart || cart.items.length === 0) {
+    throw new Error("Cart is empty or has been cleared");
+  }
+
+  // Validate that order total matches cart total
+  const cartTotal = cart.items.reduce(
+    (acc, item) => acc + item.productVariant.priceInCents * item.quantity,
+    0,
+  );
+
+  if (cartTotal !== order.totalPriceInCents) {
+    throw new Error("Order total does not match cart total");
+  }
+
+  // Additional validation: check if cart items still exist and haven't been modified
+  const cartItemIds = cart.items.map((item) => item.id);
+  const existingCartItems = await db
+    .select()
+    .from(cartItemTable)
+    .where(inArray(cartItemTable.id, cartItemIds));
+
+  if (existingCartItems.length !== cart.items.length) {
+    throw new Error("Some cart items have been removed or modified");
   }
   const orderItems = await db.query.orderItemTable.findMany({
     where: eq(orderItemTable.orderId, orderId),
@@ -71,5 +111,8 @@ export const createCheckoutSession = async (
       };
     }),
   });
-  return checkoutSession;
+  return {
+    id: checkoutSession.id,
+    url: checkoutSession.url,
+  };
 };
