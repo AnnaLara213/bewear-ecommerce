@@ -1,9 +1,10 @@
+import { XCircle } from "lucide-react";
+import Link from "next/link";
+
 import Footer from "@/components/common/footer";
 import { Header } from "@/components/common/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { XCircle } from "lucide-react";
-import Link from "next/link";
 
 const CheckoutCancelPage = () => {
   return (

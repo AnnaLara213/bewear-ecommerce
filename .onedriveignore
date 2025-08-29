@@ -1,0 +1,13 @@
+# OneDrive ignore file to prevent synchronization conflicts
+.next/
+node_modules/
+out/
+build/
+.env*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.tsbuildinfo
+.DS_Store
+*.pem

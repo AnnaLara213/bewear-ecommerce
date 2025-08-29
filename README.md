@@ -23,6 +23,8 @@ A modern e-commerce platform built with Next.js 15, TypeScript, and cutting-edge
 - PostgreSQL database
 - Stripe account (for payments)
 
+> **⚠️ Important for Windows/OneDrive Users**: If you're working on Windows with OneDrive synchronization, you may encounter file system errors. The project includes a `.onedriveignore` file to prevent these issues. If you still experience problems, consider moving the project outside of your OneDrive folder.
+
 ### Installation
 
 1. Clone the repository:
